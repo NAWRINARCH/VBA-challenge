@@ -76,4 +76,15 @@ Sub ProcessQuarterlyData()
         .FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, Formula1:="=0"
         .FormatConditions(2).Interior.Color = RGB(255, 99, 71)
     End With
-End Sub
+End Sub 
+
+The total stock volume of the stock result is shown in the following image:
+![screenshot 1 VBA](https://github.com/NAWRINARCH/VBA-challenge/assets/170464172/b583ab63-b6dd-4a20-a635-c18a4a0aa06b)  
+
+
+The stock with the "Greatest % increase", " Greatest percent decrease", and "Greatest total volume" is shown in the following image:
+![screenshot 2 VBA](https://github.com/NAWRINARCH/VBA-challenge/assets/170464172/f44ef1bf-e6fd-4974-bfd5-fe6a60df4046)
+
+
+
+
