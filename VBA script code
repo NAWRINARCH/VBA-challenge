@@ -1,0 +1,119 @@
+Sub ProcessQuarterlyData()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long, j As Long
+    Dim ticker As String
+    Dim openPrice As Double, closePrice As Double, volume As Double
+    Dim totalVolume As Double
+    Dim quarterlyChange As Double, percentChange As Double
+    Dim tickerDict As Object
+    Dim summaryRow As Long
+    Dim tickerKeys As Variant
+
+    For Each ws In ThisWorkbook.Worksheets
+        If ws.Name Like "Q*" Then
+            lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+            ' Create dictionary to store data
+            Set tickerDict = CreateObject("Scripting.Dictionary")
+
+            ' Collect data from each row
+            For i = 2 To lastRow
+                ticker = ws.Cells(i, 1).Value
+                openPrice = ws.Cells(i, 3).Value
+                closePrice = ws.Cells(i, 6).Value
+                volume = ws.Cells(i, 7).Value
+
+                If Not tickerDict.exists(ticker) Then
+                    tickerDict.Add ticker, Array(openPrice, closePrice, volume)
+                Else
+                    Dim arr As Variant
+                    arr = tickerDict(ticker)
+                    arr(1) = closePrice
+                    arr(2) = arr(2) + volume
+                    tickerDict(ticker) = arr
+                End If
+            Next i
+
+            ' Add headers for the output columns in the current worksheet
+            ws.Cells(1, 10).Value = "Ticker"
+            ws.Cells(1, 11).Value = "Total Volume"
+            ws.Cells(1, 12).Value = "Quarterly Change ($)"
+            ws.Cells(1, 13).Value = "Percent Change (%)"
+            ws.Cells(1, 15).Value = "Greatest % Increase"
+            ws.Cells(1, 16).Value = "Greatest % Decrease"
+            ws.Cells(1, 17).Value = "Greatest Total Volume"
+
+            summaryRow = 2
+            ' Get keys from the dictionary
+            tickerKeys = tickerDict.Keys
+
+           
+           
+
+            ' Write summary data to the current worksheet and calculate metrics
+            For j = LBound(tickerKeys) To UBound(tickerKeys)
+                ticker = tickerKeys(j)
+                Dim data As Variant
+                data = tickerDict(ticker)
+
+                openPrice = data(0)
+                closePrice = data(1)
+                totalVolume = data(2)
+                quarterlyChange = closePrice - openPrice
+                If openPrice <> 0 Then
+                    percentChange = (quarterlyChange / openPrice) * 100
+                Else
+                    percentChange = 0
+                End If
+
+                ws.Cells(summaryRow, 10).Value = ticker
+                ws.Cells(summaryRow, 11).Value = totalVolume
+                ws.Cells(summaryRow, 12).Value = quarterlyChange
+                ws.Cells(summaryRow, 13).Value = percentChange
+                summaryRow = summaryRow + 1
+
+                ' Update metrics for greatest % increase, % decrease, and total volume
+                If percentChange > maxPercentIncrease Then
+                    maxPercentIncrease = percentChange
+                    maxPercentIncreaseTicker = ticker
+                End If
+
+                If percentChange < maxPercentDecrease Then
+                    maxPercentDecrease = percentChange
+                    maxPercentDecreaseTicker = ticker
+                End If
+
+                If totalVolume > maxVolume Then
+                    maxVolume = totalVolume
+                    maxVolumeTicker = ticker
+                End If
+            Next j
+
+            ' Write the greatest metrics to the current worksheet
+            ws.Cells(2, 15).Value = maxPercentIncreaseTicker & " (" & maxPercentIncrease & "%)"
+            ws.Cells(2, 16).Value = maxPercentDecreaseTicker & " (" & maxPercentDecrease & "%)"
+            ws.Cells(2, 17).Value = maxVolumeTicker & " (" & maxVolume & ")"
+
+            ' Apply conditional formatting
+            ApplyConditionalFormatting ws, "L2:L" & summaryRow - 1, "Quarterly Change ($)"
+            ApplyConditionalFormatting ws, "M2:M" & summaryRow - 1, "Percent Change (%)"
+
+        End If
+    Next ws
+
+    MsgBox "Quarterly data processed and summary created successfully.", vbInformation
+End Sub
+
+Sub ApplyConditionalFormatting(sheet As Worksheet, rangeStr As String, title As String)
+    With sheet.Range(rangeStr)
+        .FormatConditions.Delete
+        .FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, Formula1:="=0"
+        .FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+        .FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, Formula1:="=0"
+        .FormatConditions(2).Interior.Color = RGB(255, 99, 71)
+    End With
+End Sub
+
+
+
