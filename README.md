@@ -6,6 +6,8 @@
  2. Quarterly change from the opening price at the at the beginning of a given quarter to the closing price at the end of the quarter.
  3. the percentage change from the opening price at the beginning of a given quarter to the closing price at the end of that quarter.
  4. The total stock volume of the stock.
+ 5.The stock with the "Greatest % increase", "Greatest % decrease", and "Greatest total volume".
+ 6.Conditional formatting that will highlight positive change in green and negative change in red. 
 
 # Instructions:
 1.Open the Excel workbook containing the stock data.
